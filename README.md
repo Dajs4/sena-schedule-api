@@ -91,7 +91,7 @@ sena-schedule-api/
 │   │   └── topic.py
 │   ├── controllers/           # Lógica de negocio
 │   │   ├── __init__.py
-│   │   ├── user.py
+│   │   ├── auth.py
 │   │   ├── campus.py
 │   │   ├── classroom.py
 │   │   ├── instructor.py
