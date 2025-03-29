@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: sena_schedule_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sena_schedule_system
+      MYSQL_USER: sena_user
+      MYSQL_PASSWORD: sena_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init_db.py:/docker-entrypoint-initdb.d/init.py
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sena_schedule_api
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://sena_user:sena_password@db:3306/sena_schedule_system
+      - SECRET_KEY=your-secret-key-here
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - API_V1_PREFIX=/api/v1
+      - PROJECT_NAME=SENA Schedule API
+      - DEBUG=False
+      - BACKEND_CORS_ORIGINS=["http://localhost:8000", "http://localhost:3000"]
+    volumes:
+      - ./app:/app/app
+
+volumes:
+  mysql_data:
